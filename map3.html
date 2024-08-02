@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leaflet Map</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+        integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <style>
+        body,
+        html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            width: 100%;
+        }
+
+        .box {
+            display: flex;
+            height: 100%;
+            width: 100%;
+        }
+
+        .leaflet-routing-container {
+            background-color: rgba(255, 255, 255, 0.4);
+            border-radius: 15px;
+            border-color: black;
+            position: fixed;
+            left: 70%;
+            top: 0%;
+            width: 30%;
+            margin-top: 0%;
+            visibility: hidden;
+        }
+
+        .leaflet-touch .leaflet-bar {
+            border: none;
+        }
+
+        .leaflet-routing-container:hover {
+            opacity: 0;
+        }
+
+        .leaflet-bar-part {
+            opacity: 0;
+            border: none;
+            visibility: hidden;
+        }
+
+        .leaflet-routing-alt {
+            text-align: center;
+            font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+            font-size: 0.8rem;
+        }
+
+        .leaflet-control-zoom-in {
+            visibility: hidden;
+        }
+
+        .leaflet-control-zoom-out {
+            visibility: hidden;
+        }
+
+        #map {
+            flex: 1;
+            height: 100vh;
+            width: calc(100% - 80px);
+        }
+
+        /* .sidebar {
+            height: 100vh;
+            width: 80px;
+            background-color: #013A63;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 1000;
+        } */
+
+        .sidebar {
+            height: 100vh;
+            width: 80px;
+            background-color: rgba(1, 58, 99, 0);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 1000;
+            /* opacity: 0; */
+        }
+
+        .leaflet-routing-alternatives-container {
+            text-align: center;
+            font-weight: 20px;
+        }
+
+        .sidebar .logo {
+            margin-bottom: 80px;
+            text-align: center;
+        }
+
+        .sidebar .logo i {
+            font-size: 2rem;
+            color: white;
+            /* color: #013A63; */
+            opacity: 100;
+        }
+
+        .sidebar .logo:hover {
+            border-bottom: 3px solid white;
+        }
+
+
+        /* .report-popup {
+            position: fixed;
+            top: 52%;
+            left: 80px;
+            width: 20%;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+            padding: 20px;
+            display: none;
+            z-index: 2000;
+            text-align: center;
+        }
+
+        .report-popup.active {
+            display: block;
+        }
+
+        .report-popup h3 {
+            margin-top: 0;
+        }
+
+        .report-popup button {
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #013A63;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .report-popup button:hover {
+            background-color: #025A8A;
+        } */
+
+        /* .search-popup {
+            position: fixed;
+            top: 17%;
+            left: 80px;
+            width: 20%;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+            padding: 20px;
+            display: none;
+            z-index: 2000;
+            text-align: center;
+        }
+
+        .search-popup.active {
+            display: block;
+        }
+
+        .search-popup h3 {
+            margin-top: 0;
+        }
+
+        .search-popup button {
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #013A63;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .search-popup button:hover {
+            background-color: #025A8A;
+        } */
+
+        .search-nav {
+            position: fixed;
+            left: 25px;
+            top: 150px;
+            background-color: rgb(0, 45, 98);
+            /* background-color: rgb(255, 255, 255); */
+            height: 60px;
+            width: 60px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 40px;
+            transition: width 0.4s ease;
+
+        }
+
+        .logo :hover {
+            border-left: 3px solid rgba(255, 255, 255, 0);
+
+        }
+
+        .search-nav.active {
+            width: 280px;
+            align-items: left;
+            justify-content: left;
+            padding-left: 25px;
+        }
+
+        .search-bar {
+            position: absolute;
+            top: 10px;
+            /* Adjust based on the height of the search icon */
+            left: 100px;
+            /* Align with the sidebar */
+            width: 0;
+            /* Start with width 0 */
+            height: 40px;
+            display: flex;
+            align-items: center;
+            transition: width 0.4s ease, opacity 0.4s ease;
+            background-color: #ffffff;
+            overflow: hidden;
+            border-radius: 15px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+            z-index: 1500;
+            /* Ensure it's above other elements */
+            /* padding-left: 25px; */
+            opacity: 0;
+
+
+            /* Start hidden */
+        }
+
+        .search-bar.active {
+            width: 200px;
+            left: 80px;
+            /* Set to desired width when active */
+            opacity: 1;
+            /* Ensure it's visible when active */
+        }
+
+        .search-bar input {
+            width: 100%;
+            height: 100%;
+            padding: 0 10px;
+            border: 1px solid #013A63;
+            border-radius: 15px;
+            font-size: 1rem;
+            box-sizing: border-box;
+            z-index: 2000;
+
+        }
+
+        .report-nav {
+            position: fixed;
+            left: 25px;
+            top: 350px;
+            background-color: rgb(0, 45, 98);
+            /* background-color: rgb(255, 255, 255); */
+            height: 60px;
+            width: 60px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 40px;
+            transition: width 0.4s ease;
+
+        }
+
+        .logo :hover {
+            border-left: 3px solid rgba(255, 255, 255, 0);
+
+        }
+
+        .report-nav.active {
+            width: 400px;
+            /* height: px; */
+            align-items: left;
+            justify-content: left;
+            padding-left: 25px;
+
+        }
+
+        .report-bar {
+            position: absolute;
+            top: 10px;
+            /* Adjust based on the height of the search icon */
+            left: 100px;
+            /* Align with the sidebar */
+            width: 0;
+            /* Start with width 0 */
+            height: 40px;
+            display: flex;
+            align-items: center;
+            transition: width 0.4s ease, opacity 0.4s ease;
+            /* background-color: #ffffff; */
+            overflow: hidden;
+            border-radius: 15px;
+            /* box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3); */
+            z-index: 1500;
+            /* Ensure it's above other elements */
+            opacity: 0;
+            /* Start hidden */
+        }
+
+        .report-bar.active {
+            width: 330px;
+            left: 80px;
+            /* Set to desired width when active */
+            opacity: 1;
+            /* Ensure it's visible when active */
+        }
+
+        .report-bar input {
+            width: 75px;
+            height: 100%;
+            padding: 0 10px;
+            border: 1px solid #013A63;
+            border-radius: 15px;
+            font-size: 1rem;
+            box-sizing: border-box;
+            z-index: 2000;
+            margin-left: 20px;
+            /* display: flex; */
+            /* flex-direction: column; */
+            /* flex-wrap: wrap; */
+
+        }
+
+        .map-nav {
+            position: fixed;
+            left: 25px;
+            top: 250px;
+            background-color: rgb(0, 45, 98);
+            /* background-color: rgb(255, 255, 255); */
+            height: 60px;
+            width: 60px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 40px;
+            transition: width 0.4s ease;
+
+        }
+
+        .settings-nav {
+            position: fixed;
+            left: 25px;
+            top: 450px;
+            background-color: rgb(0, 45, 98);
+            /* background-color: rgb(255, 255, 255); */
+            height: 60px;
+            width: 60px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 40px;
+            transition: width 0.4s ease;
+
+        }
+
+
+
+
+        @media (max-width: 768px) {
+            .sidebar {
+                height: 80px;
+                width: 100%;
+                position: fixed;
+                bottom: 0;
+                top: auto;
+                left: 0;
+                flex-direction: row;
+                justify-content: space-around;
+                padding: 10px 0;
+                z-index: 1000;
+            }
+
+            .sidebar .logo {
+                margin-bottom: 0;
+            }
+
+            #map {
+                width: 100%;
+                height: calc(100vh - 80px);
+                flex: none;
+                position: fixed;
+                top: 0;
+                left: 0;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .sidebar .logo i {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="box">
+        <div id="map"></div>
+        <div class="sidebar">
+            <div class="map-nav logo">
+                <!-- <button id="locate-btn"> -->
+                <i id="locate-btn" class="fa-regular fa-compass"></i>
+                <!-- </button> -->
+            </div>
+            <div class="search-nav logo">
+                <div class="search-bar">
+                    <input id="input-parking" onfocus="this.value=''" type="text" placeholder="Search Parking">
+                </div>
+                <i id="search-btn" onclick="this.value=''" class="fa-solid fa-magnifying-glass"></i>
+            </div>
+            <!-- <div class="profile-nav logo">
+                <i class="fa-solid fa-user"></i>
+            </div> -->
+            <div class="report-nav logo">
+                <div class="report-bar">
+                    <input id="input-lat" onfocus="this.value=''" type="text" placeholder="Lat">
+                    <input id="input-long" onfocus="this.value=''" type="text" placeholder="Lang">
+                    <input id="input-parking-name" onfocus="this.value=''" type="text" placeholder="Name">
+                    <div id="delete-btn" style="margin-left: 10px;">
+                        <i class="fa-regular fa-trash-can"></i>
+                    </div>
+                </div>
+                <i id="report-loc" onclick="this.value=''" class="fa-regular fa-font-awesome"></i>
+            </div>
+            <div class="settings-nav logo">
+                <i class="fa-solid fa-bars"></i>
+            </div>
+        </div>
+
+        <!-- <div class="search-popup">
+            <h3>Search Parking</h3>
+            <input type="text" id="input-parking" placeholder="Search Parking">
+            <button id="searchbtn">Search</button>
+        </div> -->
+        <!-- <div class="report-popup">
+            <h3>Report Parking</h3>
+            <input type="text" id="input-lat" placeholder="Report Latitude">
+            <input type="text" id="input-long" placeholder="Report Longitude">
+            <input type="text" id="input-parking-name" placeholder="Enter Parking Name">
+            <button id="reportbtn">Report</button>
+            <button id="deletebtn">Delete</button>
+        </div>
+    </div> -->
+
+        <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+        <script src="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.js"></script>
+        <script src="https://unpkg.com/leaflet.locatecontrol/dist/L.Control.Locate.min.js"></script>
+        <script>
+            document.addEventListener("DOMContentLoaded", function () {
+                var map = L.map('map').setView([18.5204, 73.8567], 10);
+
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: 'Map data © OpenStreetMap contributors'
+                }).addTo(map);
+
+                var mainMarker = L.marker([18.5204, 73.8567], { title: "Main Marker" }).addTo(map)
+                    .bindPopup("<b>Main Marker</b>")
+                    .openPopup();
+
+                var lc = L.control.locate({
+                    position: 'topright',
+                    drawCircle: true,
+                    follow: true,
+                    setView: true,
+                    keepCurrentZoomLevel: true,
+                    stopFollowingOnDrag: false,
+                    remainActive: false,
+                    markerClass: L.marker,
+                    circleStyle: {
+                        color: '#136AEC',
+                        fillColor: '#136AEC',
+                        fillOpacity: 0.15,
+                        weight: 2,
+                        opacity: 0.5
+                    },
+                    markerStyle: {
+                        color: '#136AEC',
+                        fillColor: '#2A93EE',
+                        fillOpacity: 0.7
+                    },
+                    onLocationError: function (err) {
+                        alert(err.message);
+                    },
+                    onLocationOutsideMapBounds: function (context) {
+                        alert(context.options.strings.outsideMapBoundsMsg);
+                    },
+                    showPopup: true,
+                    strings: {
+                        title: "Show me where I am",
+                        metersUnit: "meters",
+                        feetUnit: "feet",
+                        popup: "You are within {distance} {unit} from this point",
+                        outsideMapBoundsMsg: "You seem located outside the boundaries of the map"
+                    }
+                }).addTo(map);
+
+                var markers = JSON.parse(localStorage.getItem('markers')) || [];
+
+                function addMarker(lat, lon, name) {
+                    var marker = L.marker([lat, lon]).addTo(map);
+
+                    marker.on('click', function () {
+                        if (mainMarker) {
+                            var routingControl = L.Routing.control({
+                                waypoints: [
+                                    L.latLng(mainMarker.getLatLng().lat, mainMarker.getLatLng().lng),
+                                    L.latLng(lat, lon)
+                                ],
+                                routeWhileDragging: true
+                            }).addTo(map);
+
+                            routingControl.on('routesfound', function (e) {
+                                var routes = e.routes;
+                                var summary = routes[0].summary;
+                                var distance = (summary.totalDistance / 1000).toFixed(2) + ' km';
+                                var time = (summary.totalTime / 3600).toFixed(2) + ' hours';
+
+                                marker.bindPopup(`<b>${name}</b><br>Distance: ${distance}<br>Time: ${time}`).openPopup();
+                                setTimeout(() => map.removeControl(routingControl), 10000);
+                            });
+
+                            // Call the Flask endpoint
+                            fetch('/run_script')
+                                .then(response => response.json())
+                                .then(data => {
+                                    if (data.status === "success") {
+                                        console.log("Script executed successfully");
+                                    } else {
+                                        console.error("Error executing script:", data.message);
+                                    }
+                                })
+                                .catch(error => console.error("Error:", error));
+                        }
+                    });
+
+                    return marker;
+                }
+
+                markers.forEach(data => addMarker(data.lat, data.lon, data.name));
+
+                var reportPopup = document.querySelector('.report-popup');
+                var searchPopup = document.querySelector('.search-popup');
+
+                document.querySelector('.report-nav').addEventListener('click', function () {
+                    reportPopup.classList.toggle('active');
+                    searchPopup.classList.remove('active');
+                });
+
+                document.querySelector('.search-nav').addEventListener('click', function () {
+                    searchPopup.classList.toggle('active');
+                    reportPopup.classList.remove('active');
+                });
+
+                document.getElementById('report-loc').addEventListener('click', function () {
+                    var lat = parseFloat(document.getElementById('input-lat').value);
+                    var lon = parseFloat(document.getElementById('input-long').value);
+                    var name = document.getElementById('input-parking-name').value;
+
+                    if (!isNaN(lat) && !isNaN(lon) && name) {
+                        var marker = addMarker(lat, lon, name);
+                        markers.push({ lat: lat, lon: lon, name: name });
+                        localStorage.setItem('markers', JSON.stringify(markers));
+
+                        alert('Marker reported successfully!');
+                        document.getElementById('input-lat').value = '';
+                        document.getElementById('input-long').value = '';
+                        document.getElementById('input-parking-name').value = '';
+                        reportPopup.classList.remove('active');
+                    } else {
+                        alert('Please enter valid latitude, longitude, and parking name.');
+                    }
+                });
+
+                document.getElementById('delete-btn').addEventListener('click', function () {
+                    var lat = parseFloat(document.getElementById('input-lat').value);
+                    var lon = parseFloat(document.getElementById('input-long').value);
+                    var name = document.getElementById('input-parking-name').value;
+
+                    if (!isNaN(lat) && !isNaN(lon) && name) {
+                        var markerIndex = markers.findIndex(marker => marker.lat === lat && marker.lon === lon && marker.name === name);
+
+                        if (markerIndex !== -1) {
+                            markers.splice(markerIndex, 1);
+                            localStorage.setItem('markers', JSON.stringify(markers));
+                            alert('Marker deleted successfully!');
+                            location.reload();
+                        } else {
+                            alert('Marker not found. Please check the latitude, longitude, and name.');
+                        }
+                    } else {
+                        alert('Please enter valid latitude, longitude, and parking name.');
+                    }
+                });
+
+                function searchMarkerByName(name) {
+                    var markerData = markers.find(marker => marker.name === name);
+
+                    if (markerData) {
+                        map.setView([markerData.lat, markerData.lon], 15);
+
+                        var marker = L.marker([markerData.lat, markerData.lon]).addTo(map);
+                        marker.bindPopup(`<b>${markerData.name}</b>`).openPopup();
+
+                        marker.on('click', function () {
+                            if (mainMarker) {
+                                var routingControl = L.Routing.control({
+                                    waypoints: [
+                                        L.latLng(mainMarker.getLatLng().lat, mainMarker.getLatLng().lng),
+                                        L.latLng(markerData.lat, markerData.lon)
+                                    ],
+                                    routeWhileDragging: true
+                                }).addTo(map);
+
+                                routingControl.on('routesfound', function (e) {
+                                    var routes = e.routes;
+                                    var summary = routes[0].summary;
+                                    var distance = (summary.totalDistance / 1000).toFixed(2) + ' km';
+                                    var time = (summary.totalTime / 3600).toFixed(2) + ' hours';
+
+                                    marker.bindPopup(`<b>${markerData.name}</b><br>Distance: ${distance}<br>Time: ${time}`).openPopup();
+                                    setTimeout(() => map.removeControl(routingControl), 10000);
+                                });
+
+                                // Call the Flask endpoint
+                                fetch('/run_script')
+                                    .then(response => response.json())
+                                    .then(data => {
+                                        if (data.status === "success") {
+                                            console.log("Script executed successfully");
+                                        } else {
+                                            console.error("Error executing script:", data.message);
+                                        }
+                                    })
+                                    .catch(error => console.error("Error:", error));
+                            }
+                        });
+
+                        marker.fire('click');
+                    } else {
+                        alert('Marker with the given name not found.');
+                    }
+                }
+
+                document.getElementById('search-btn').addEventListener('click', function () {
+                    var name = document.getElementById('input-parking').value;
+
+                    if (name) {
+                        searchMarkerByName(name);
+                    } else {
+                        alert('Please enter a marker name.');
+                    }
+                });
+
+                mainMarker.on('click', function () {
+                    map.fitBounds(mainMarker.getBounds());
+                });
+
+                // Add this function to handle the "current location" button click
+                document.getElementById('locate-btn').addEventListener('click', function () {
+                    if (navigator.geolocation) {
+                        navigator.geolocation.getCurrentPosition(function (position) {
+                            var lat = position.coords.latitude;
+                            var lon = position.coords.longitude;
+
+                            // Remove old main marker if exists
+                            if (mainMarker) {
+                                map.removeLayer(mainMarker);
+                            }
+
+                            // Add new main marker
+                            mainMarker = L.marker([lat, lon], { title: "Main Marker" }).addTo(map)
+                                .bindPopup("<b>Main Marker</b>")
+                                .openPopup();
+
+                            map.setView([lat, lon], 15);
+
+                        }, function (error) {
+                            console.error("Error occurred while getting location:", error);
+                        });
+                    } else {
+                        alert("Geolocation is not supported by this browser.");
+                    }
+                });
+
+                document.getElementById('search-btn').addEventListener('click', function () {
+                    var searchNav = document.querySelector('.search-nav');
+                    var searchBar = document.querySelector('.search-bar');
+
+                    // Toggle visibility
+                    if (searchNav.classList.contains('active')) {
+                        searchNav.classList.remove('active');
+                        searchBar.classList.remove('active');
+                        searchBar.style.opacity = '0';
+                    } else {
+                        searchBar.classList.add('active');
+                        searchNav.classList.add('active');
+                        searchBar.style.opacity = '1';
+                    }
+                });
+
+                document.getElementById('close-search').addEventListener('click', function () {
+                    var searchNav = document.querySelector('.search-nav');
+                    var searchBar = document.querySelector('.search-bar');
+
+                    searchNav.classList.remove('active');
+                    searchBar.classList.remove('active');
+                    searchBar.style.opacity = '0';
+                });
+            });
+
+            document.getElementById('report-loc').addEventListener('click', function () {
+
+
+                var searchNav = document.querySelector('.report-nav');
+                var searchBar = document.querySelector('.report-bar');
+
+                // Toggle visibility
+                if (searchNav.classList.contains('active')) {
+                    searchNav.classList.remove('active');
+                    searchBar.classList.remove('active');
+                    searchBar.style.opacity = '0';
+                } else {
+                    searchBar.classList.add('active');
+                    searchNav.classList.add('active');
+                    searchBar.style.opacity = '1';
+                }
+
+
+            });
+
+        </script>
+</body>
+
+</html>
